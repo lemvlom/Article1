@@ -1,62 +1,62 @@
 function ModelExample2
 
-close all;
-clear;
-clc;
+    close all;
+    clear;
+    clc;
 
-x = @(x1, x2) [x1; x2];
+    x = @(x1, x2) [x1; x2];
 
-A = @(x) [0 1; 
-          x(1) 0];
-      
-
-C = [1 0; 0 1];
+    A = @(x) [0 1; 
+              x(1) 0];
 
 
-B2 = [ 0; 1];
-B1 = B2;
+    C = [1 0; 0 1];
 
-Q = 1;
-P = 1;
-S = [1 0; 0 1];
-X0 = [ 1; 1];
 
-% иру 1
-% gamma = fun_gamma(X0, A, C);
-gamma = 1.5;
-K2 = fun_K2(X0(1), gamma);
-global u;
-global w;
+    B2 = [ 0; 1];
+    B1 = B2;
 
-u = fun_u(X0, B2, K2);
-w = fun_w(X0, B1, K2, gamma);
+    Q = 1;
+    P = 1;
+    S = [1 0; 0 1];
+    X0 = [ 1; 1];
 
-% иру 2
-t0=0;
-grstep=0.1;
-tfin=10;
+    % Step 1
 
-% иру 2
-tout = t0 : grstep : tfin;
+    gamma = 1.5;
+    K2 = fun_K2(X0(1), gamma);
+    global u;
+    global w;
 
-x_cond = X0;
-    
-Check = (A(x_cond) + ((1/(gamma*gamma))*B1*inv(P)*B1' - B2*inv(Q)*B2')*K2);
-BolshoeViraz = eig(Check, eye(size(Check)))
+    u = fun_u(X0, B2, K2);
+    w = fun_w(X0, B1, K2, gamma);
 
-[t, x] = ode45(@(t, x) ode_fun(t, x, A, B1, B2, C, w, u, K2, P, Q), tout, x_cond);
+    % Step 2
+    t0=0;
+    grstep=0.1;
+    tfin=10;
 
-figure;
-plot(t, x(:, 1));
-    xlabel('t');
-    ylabel('x_1');
-grid on
+    % Step 3
+    tout = t0 : grstep : tfin;
 
-figure;
-plot(t, x(:, 2));
-    xlabel('t');
-    ylabel('x_2');
-grid on
+    x_cond = X0;
+
+    Check = (A(x_cond) + ((1/(gamma*gamma))*B1*inv(P)*B1' - B2*inv(Q)*B2')*K2);
+    BolshoeViraz = eig(Check, eye(size(Check)))
+
+    [t, x] = ode45(@(t, x) ode_fun(t, x, A, B1, B2, C, w, u, K2, P, Q), tout, x_cond);
+
+    figure;
+    plot(t, x(:, 1));
+        xlabel('t');
+        ylabel('x_1');
+    grid on
+
+    figure;
+    plot(t, x(:, 2));
+        xlabel('t');
+        ylabel('x_2');
+    grid on
 
 end
 
@@ -102,20 +102,3 @@ end
 function w = fun_w(x, B1, K2, gamma)
     w = (1/(gamma*gamma))*B1'*K2*x;
 end
-
-% function robustness = fun_run()
-%     Check = (A +((1/(gamma*gamma))*B1*B1' - B2*inv(Q1)*B2')*P);
-% %     Check = A - B*KK*C;
-% %     Check = A - B2*inv(Q1)*B2'*P;
-%     BolshoeViraz = eig(Check, eye(size(Check)));
-% end
-
-% function gamma = fun_gamma(x, A, C)
-%     A = A(x);
-%     gamma = C*C/(A*A + C*C) + 0.01;
-% end
-% 
-% function A = fun_A(x, A, C)
-%     A = A(x);
-%     gamma = C*C/(A*A + C*C) + 0.01;
-% end
